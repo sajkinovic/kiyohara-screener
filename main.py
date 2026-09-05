@@ -51,38 +51,7 @@ REQUEST_INTERVAL_SEC = float(os.environ.get("JQUANTS_REQUEST_INTERVAL", "0.2"))
 MAX_RETRIES = 3
 
 
-class JQuantsClient:
-    def __init__(self):
-        self.session = requests.Session()
-        self.api_key = os.environ.get("JQUANTS_API_KEY")
-        if not self.api_key:
-            raise RuntimeError("JQUANTS_API_KEY が設定されていません。")
-        
-        self.session.headers.update({"x-api-key": self.api_key})
 
-    def _get(self, path: str, params: Optional[dict] = None) -> dict:
-        last_exc = None
-        for attempt in range(1, MAX_RETRIES + 1):
-            try:
-                resp = self.session.get(
-                    f"{JQUANTS_BASE_URL}{path}",
-                    params=params,
-                    timeout=30
-                )
-                if resp.status_code == 429:
-                    time.sleep(2 * attempt)
-                    continue
-                resp.raise_for_status()
-                return resp.json()
-            except requests.HTTPError as exc:
-                last_exc = exc
-                if resp.status_code >= 500:
-                    time.sleep(2 * attempt)
-                    continue
-                raise
-        raise last_excclass JQuantsClient:
-    def __init__(self):
-        self.session = requests.Session()
         self.id_token = self._get_id_token()
 
     def _get_refresh_token(self) -> str:
