@@ -85,7 +85,6 @@ def screen_stock(client: JQuantsClient, stock: dict, start_date_str: str, end_da
     if not code:
         return None
 
-    # 株価取得
     quotes = client.get_daily_quotes_by_code(code, start_date_str, end_date_str)
     if not quotes:
         return None
@@ -96,18 +95,14 @@ def screen_stock(client: JQuantsClient, stock: dict, start_date_str: str, end_da
     if not close_price or close_price <= 0:
         return None
 
-    # 財務情報取得
     statements = client.get_financial_statements(code)
     stmt = get_latest_statement(statements)
     if not stmt:
         return None
 
-    # 財務指標の抽出
     equity = parse_float(stmt.get("NetAssets", stmt.get("Equity")))
-    total_assets = parse_float(stmt.get("TotalAssets"))
     bps = parse_float(stmt.get("BookValuePerShare", stmt.get("BPS")))
     eps = parse_float(stmt.get("EarningsPerShare", stmt.get("EPS")))
-    operating_profit = parse_float(stmt.get("OperatingProfit"))
     shs_out = parse_float(stmt.get("NumberOfIssuedAndOutstandingSharesAtTheEndOfFiscalYearIncludingTreasuryStock"))
 
     if not bps or bps <= 0:
@@ -115,15 +110,8 @@ def screen_stock(client: JQuantsClient, stock: dict, start_date_str: str, end_da
 
     pbr = close_price / bps
     per = (close_price / eps) if (eps and eps > 0) else None
-
-    # 簡易清算価値計算
-    net_cash_like = None
-    if equity is not None:
-        net_cash_like = equity * 0.7
-
     market_cap = (close_price * shs_out) if shs_out else None
 
-    # スクリーニング条件（例：PBR 1.0未満、流動性考慮）
     if pbr < 1.0:
         return {
             "Code": code,
@@ -154,7 +142,6 @@ def main():
     end_date_str = today.strftime("%Y-%m-%d")
 
     results = []
-    # 動作確認のため先頭50銘柄のみテスト実行
     test_target = stocks[:50]
 
     print("スクリーニング処理を実行中...")
