@@ -27,7 +27,7 @@ jobs:
 
       - name: Run screener
         env:
-          JQUANTS_REFRESH_TOKEN: ${{ secrets.JQUANTS_REFRESH_TOKEN }}
+          JQUANTS_API_KEY: ${{ secrets.JQUANTS_API_KEY }}
           JQUANTS_MAILADDRESS: ${{ secrets.JQUANTS_MAILADDRESS }}
           JQUANTS_PASSWORD: ${{ secrets.JQUANTS_PASSWORD }}
         run: python main.py
